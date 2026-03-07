@@ -236,6 +236,18 @@
       },
       "heat_recovery_efficiency": {
         "name": "Heat recovery efficiency"
+      },
+      "connection_status": {
+        "name": "Connection status",
+        "state": {
+          "connected": "Connected",
+          "authentication_error": "Authentication error",
+          "server_error": "Server error",
+          "timeout": "Timeout",
+          "connection_error": "Connection error",
+          "no_internet": "No internet",
+          "unknown_error": "Unknown error"
+        }
       }
     },
     "switch": {

@@ -114,6 +114,9 @@ class BrinkAutomationController:
         self._boost_trigger_entity: str | None = None
         self._boost_trigger_rate: float | None = None
 
+        # Level watchdog cooldown (monotonic timestamp of last correction)
+        self._last_level_correction: float = 0.0
+
         # Unsub handles
         self._boost_timer_unsub: CALLBACK_TYPE | None = None
         self._countdown_timer_unsub: CALLBACK_TYPE | None = None
@@ -373,6 +376,8 @@ class BrinkAutomationController:
 
         await self._async_retry_pending_writes()
 
+        await self._verify_level()
+
     async def async_restore_state(self) -> None:
         """Restore automation state after HA restart.
 
@@ -434,6 +439,7 @@ class BrinkAutomationController:
         self._pending_writes = None
         self._boost_end_monotonic = 0.0
         self._clear_boost_trigger()
+        self._last_level_correction = 0.0
         self._state = AutomationState.IDLE
         self._season = None
 
@@ -811,6 +817,90 @@ class BrinkAutomationController:
             await self._async_apply_seasonal_level(boosted=boosted)
         except Exception:
             _LOGGER.exception("Error applying seasonal level from timer callback")
+
+    # ------------------------------------------------------------------
+    # Level watchdog
+    # ------------------------------------------------------------------
+
+    async def _verify_level(self) -> None:
+        """Verify the ventilation level matches the expected state and correct if needed.
+
+        Acts as a safety net: if a timer callback failed or a write was lost,
+        this ensures the device converges to the correct level on the next
+        coordinator poll.  Only runs in BASE or BOOSTED state with no pending
+        writes, and respects a 5-minute cooldown between corrections.
+        """
+        if self._state == AutomationState.IDLE:
+            return
+
+        if self._pending_writes is not None:
+            return
+
+        # Read actual values from coordinator data
+        data = self._coordinator.data
+        if not data:
+            return
+
+        actual_mode: str | None = None
+        actual_level: str | None = None
+
+        for device in data.values():
+            for component in device.get("components", []):
+                params = component.get("parameters", {})
+                mode_param = params.get(PARAM_OPERATING_MODE)
+                if mode_param is not None and actual_mode is None:
+                    actual_mode = mode_param.get("value")
+                level_param = params.get(PARAM_VENTILATION_LEVEL)
+                if level_param is not None and actual_level is None:
+                    actual_level = level_param.get("value")
+
+        if actual_mode is None or actual_level is None:
+            _LOGGER.debug("Level watchdog: could not read current mode/level from data")
+            return
+
+        # Determine expected level based on current state
+        if self._state == AutomationState.BOOSTED:
+            expected_level = str(self._get_seasonal_max_level())
+        else:
+            expected_level = str(self._get_seasonal_base_level())
+
+        expected_mode = "1"  # manual
+
+        if actual_mode == expected_mode and actual_level == expected_level:
+            _LOGGER.debug(
+                "Level watchdog: OK (mode=%s, level=%s, state=%s)",
+                actual_mode,
+                actual_level,
+                self._state,
+            )
+            return
+
+        # Mismatch detected -- check cooldown
+        now = time.monotonic()
+        if now - self._last_level_correction < 300:
+            _LOGGER.debug(
+                "Level watchdog: mismatch detected but cooldown active "
+                "(actual mode=%s level=%s, expected mode=%s level=%s)",
+                actual_mode,
+                actual_level,
+                expected_mode,
+                expected_level,
+            )
+            return
+
+        _LOGGER.warning(
+            "Level watchdog: correcting mismatch "
+            "(actual mode=%s level=%s, expected mode=%s level=%s, state=%s)",
+            actual_mode,
+            actual_level,
+            expected_mode,
+            expected_level,
+            self._state,
+        )
+        self._last_level_correction = now
+        await self._async_apply_seasonal_level(
+            boosted=self._state == AutomationState.BOOSTED
+        )
 
     # ------------------------------------------------------------------
     # Parameter lookup helpers

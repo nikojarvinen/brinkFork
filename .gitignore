@@ -5,3 +5,7 @@ __pycache__/
 CLAUDE.md
 **/CLAUDE.md
 /docs
+.venv/
+.coverage
+.pytest_cache/
+*.egg-info/

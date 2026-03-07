@@ -106,6 +106,18 @@
       },
       "heat_recovery_efficiency": {
         "default": "mdi:heat-wave"
+      },
+      "connection_status": {
+        "default": "mdi:cloud-check",
+        "state": {
+          "connected": "mdi:cloud-check",
+          "authentication_error": "mdi:cloud-lock",
+          "server_error": "mdi:cloud-alert",
+          "timeout": "mdi:cloud-clock",
+          "connection_error": "mdi:cloud-off-outline",
+          "no_internet": "mdi:wifi-off",
+          "unknown_error": "mdi:cloud-question"
+        }
       }
     },
     "binary_sensor": {

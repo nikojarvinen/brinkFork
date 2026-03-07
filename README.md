@@ -18,6 +18,8 @@ Home Assistant integration for Brink HRV units. Control works over the internet 
 - **Heat recovery efficiency sensor** — calculated from supply, fresh air, and indoor temperature sensors
 - **Season detection** — automatic summer/winter switching based on outdoor temperature vs configurable freezing threshold
 - **Humidity rate-of-change sensors** — monitor up to 3 humidity sensors with per-minute delta tracking
+- **Connection status sensor** — real-time monitoring of the Brink cloud API connection with internet connectivity checks to distinguish server issues from local network problems
+- **Level watchdog** — self-healing safety net that detects and corrects ventilation level mismatches on every poll cycle (e.g., if a timer fails or a write is lost)
 - **Internet resilience** — queued write commands are automatically retried when connectivity is restored
 - **Expanded options flow** — 3-step configuration (general, extra ventilation, adaptive mode) with indoor temperature and humidity sensor selectors
 
@@ -62,6 +64,7 @@ The integration exposes up to 20 parameters from the Brink Home API as Home Assi
 | Humidity rate sensor 2 (%/min) | %/min | Humidity rate of change for monitored sensor 2, checked every 60 seconds. Shows unavailable when no sensor is assigned. | Enabled |
 | Humidity rate sensor 3 (%/min) | %/min | Humidity rate of change for monitored sensor 3, checked every 60 seconds. Shows unavailable when no sensor is assigned. | Enabled |
 | Heat recovery efficiency | % | Heat exchanger efficiency calculated from supply, fresh air, and indoor temperatures. Shows 0% when bypass is open or temperatures are equal. Requires at least one indoor temperature sensor configured. | Enabled |
+| Connection status | enum | Brink cloud API connection status (Connected, Authentication error, Server error, Timeout, Connection error, No internet, Unknown error). Includes `last_successful_poll`, `last_error_message`, and `consecutive_errors` attributes. | Enabled |
 
 ### Select Controls
 
@@ -359,6 +362,25 @@ automation:
       - service: input_boolean.turn_off
         target:
           entity_id: input_boolean.extra_ventilation_trigger
+```
+
+### Alert on connection problems
+
+```yaml
+automation:
+  - alias: "Brink connection lost notification"
+    trigger:
+      - platform: template
+        value_template: >-
+          {{ state_attr('sensor.brink_ventilation_XXXX_connection_status',
+             'consecutive_errors') | int(0) > 3 }}
+    action:
+      - service: notify.notify
+        data:
+          title: "Brink Ventilation"
+          message: >-
+            Connection issue: {{ states('sensor.brink_ventilation_XXXX_connection_status') }}.
+            Last successful poll: {{ state_attr('sensor.brink_ventilation_XXXX_connection_status', 'last_successful_poll') }}
 ```
 
 Replace `XXXX` in entity IDs with your device's system ID. You can find the correct entity IDs in **Settings > Devices & Services > Entities**.

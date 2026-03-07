@@ -33,6 +33,7 @@ from .const import (
     CONF_HUMIDITY_SENSOR_3,
     CONF_INDOOR_TEMPERATURE_ENTITY_1,
     CONF_INDOOR_TEMPERATURE_ENTITY_2,
+    CONNECTION_STATUS_OPTIONS,
     DOMAIN,
     PARAM_ACTIVE_CONTROL_STATUS,
     PARAM_BYPASS_VALVE_STATUS,
@@ -228,6 +229,9 @@ def _create_sensor_entities(
 
     # Add automation-controller-based sensors (not tied to API parameters)
     for system_id in new_systems:
+        entities.append(
+            BrinkConnectionStatusEntity(coordinator, system_id)
+        )
         entities.append(
             BrinkExtraVentRemainingEntity(coordinator, system_id)
         )
@@ -437,6 +441,61 @@ class BrinkHumidityDeltaEntity(BrinkHomeDeviceEntity, SensorEntity):
             return None
         deltas = self.coordinator.automation_controller.humidity_deltas
         return deltas.get(source, 0.0)
+
+
+class BrinkConnectionStatusEntity(BrinkHomeDeviceEntity, SensorEntity):
+    """Sensor showing the Brink cloud API connection status.
+
+    Updated on every coordinator poll cycle. When the Brink API is unreachable,
+    a lightweight internet connectivity check determines whether the issue is
+    local (no_internet) or server-side (connection_error / timeout).
+    """
+
+    _attr_translation_key = "connection_status"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = CONNECTION_STATUS_OPTIONS
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(
+        self,
+        coordinator: BrinkDataCoordinator,
+        system_id: int,
+    ) -> None:
+        """Initialize the connection status sensor."""
+        super().__init__(
+            coordinator,
+            system_id,
+            PARAM_VENTILATION_LEVEL,
+            "connection_status",
+        )
+
+    @property
+    def unique_id(self) -> str:
+        """Return a unique ID for this entity."""
+        return f"{DOMAIN}_{self._system_id}_connection_status"
+
+    @property
+    def available(self) -> bool:
+        """Always available — reports status even during errors."""
+        return True
+
+    @property
+    def native_value(self) -> str:
+        """Return the current connection status."""
+        return self.coordinator.connection_status
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return extra attributes with diagnostic details."""
+        attrs: dict[str, Any] = {}
+        if self.coordinator.last_successful_poll is not None:
+            attrs["last_successful_poll"] = (
+                self.coordinator.last_successful_poll.isoformat()
+            )
+        if self.coordinator.last_error_message is not None:
+            attrs["last_error_message"] = self.coordinator.last_error_message
+        attrs["consecutive_errors"] = self.coordinator.consecutive_errors
+        return attrs
 
 
 class BrinkHeatRecoveryEfficiencyEntity(BrinkHomeDeviceEntity, SensorEntity):
