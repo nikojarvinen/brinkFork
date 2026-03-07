@@ -1,14 +1,27 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
-[![GitHub Release](https://img.shields.io/github/release/samuolis/brink.svg?style=for-the-badge&color=blue)](https://github.com/samuolis/brink/releases)
+[![GitHub Release](https://img.shields.io/github/release/nikojarvinen/Brink-HRV-control.svg?style=for-the-badge&color=blue)](https://github.com/nikojarvinen/Brink-HRV-control/releases)
 
-![Project Maintenance](https://img.shields.io/badge/maintainer-Lukas%20Samuolis-blue.svg?style=for-the-badge)
+![Project Maintenance](https://img.shields.io/badge/maintainer-Niko%20Järvinen-blue.svg?style=for-the-badge)
 
-# Brink-Home Ventilation
+# Brink HRV Control (Fork)
 
-A custom [Home Assistant](https://www.home-assistant.io/) integration for [Brink](https://www.brink-home.com/) ventilation systems. This integration connects to the Brink Home cloud portal to provide monitoring and control of your Brink heat recovery ventilation unit directly from Home Assistant.
+Home Assistant integration for Brink HRV units. Control works over the internet utilizing the eBus card (eModule/iModule) for Brink machines.
 
-Brink Home is a cloud service that allows remote monitoring and control of Brink residential ventilation systems equipped with the [Brink eModule/iModule](https://www.brinkclimatesystems.nl/documenten/brink-home-emodule-imodule-614491.pdf). This integration polls the Brink Home API to expose sensors, controls, and diagnostics as Home Assistant entities.
+> **This is a fork of the [original Brink Home integration](https://github.com/samuolis/brink) by Lukas Samuolis, with added functionality and improvements.**
+
+### What's new in this fork
+
+- **Adaptive (HA) ventilation mode** — humidity-responsive automatic ventilation with configurable spike detection and seasonal base levels
+- **Extra ventilation boost** — timed boost switch with season-aware max levels to limit preheater electricity usage in winter
+- **Boost trigger attribution** — logbook events and entity state attributes showing why a boost was triggered (humidity spike vs manual)
+- **Heat recovery efficiency sensor** — calculated from supply, fresh air, and indoor temperature sensors
+- **Season detection** — automatic summer/winter switching based on outdoor temperature vs configurable freezing threshold
+- **Humidity rate-of-change sensors** — monitor up to 3 humidity sensors with per-minute delta tracking
+- **Internet resilience** — queued write commands are automatically retried when connectivity is restored
+- **Expanded options flow** — 3-step configuration (general, extra ventilation, adaptive mode) with indoor temperature and humidity sensor selectors
+
+---
 
 ## Supported Devices
 
@@ -79,13 +92,13 @@ Entities marked "Disabled" in the Default column are created but disabled by def
 1. Open [HACS](https://hacs.xyz/) in Home Assistant.
 2. Go to **Integrations**.
 3. Click the three-dot menu in the top right and select **Custom repositories**.
-4. Add the repository URL and select **Integration** as the category.
-5. Search for "Brink-Home Ventilation" and click **Download**.
+4. Enter `https://github.com/nikojarvinen/Brink-HRV-control` as the repository URL and select **Integration** as the category. Click **Add**.
+5. Search for "Brink HRV Control" and click **Download**.
 6. Restart Home Assistant.
 
 ### Manual Installation
 
-1. Download the latest release from the [GitHub releases page](https://github.com/samuolis/brink/releases).
+1. Download the latest release from the [GitHub releases page](https://github.com/nikojarvinen/Brink-HRV-control/releases).
 2. Copy the `brink_ventilation` folder into your Home Assistant `custom_components` directory (e.g., `/config/custom_components/brink_ventilation/`).
 3. Restart Home Assistant.
 
@@ -95,7 +108,7 @@ Entities marked "Disabled" in the Default column are created but disabled by def
 
 1. Go to **Settings > Devices & Services**.
 2. Click **Add Integration**.
-3. Search for "Brink-Home Ventilation".
+3. Search for "Brink HRV Control".
 4. Enter your Brink Home portal credentials:
    - **Email**: The email address you use to log into [www.brink-home.com](https://www.brink-home.com).
    - **Password**: Your Brink Home portal password.
@@ -106,7 +119,7 @@ Entities marked "Disabled" in the Default column are created but disabled by def
 After setup, configure the integration options:
 
 1. Go to **Settings > Devices & Services**.
-2. Find the Brink-Home Ventilation integration and click **Configure**.
+2. Find the Brink HRV Control integration and click **Configure**.
 3. The options flow has three pages:
 
 #### General Settings
@@ -163,10 +176,10 @@ These are handled automatically on first startup after the upgrade:
 ## Removal
 
 1. Go to **Settings > Devices & Services**.
-2. Find **Brink-Home Ventilation**.
+2. Find **Brink HRV Control**.
 3. Click the three-dot menu and select **Delete**.
 4. Restart Home Assistant (optional, but recommended to clean up fully).
-5. To also remove the integration files, open **HACS > Integrations**, find "Brink-Home Ventilation", click the three-dot menu, and select **Remove**. Then restart Home Assistant again.
+5. To also remove the integration files, open **HACS > Integrations**, find "Brink HRV Control", click the three-dot menu, and select **Remove**. Then restart Home Assistant again.
 
 ## Extra Ventilation
 

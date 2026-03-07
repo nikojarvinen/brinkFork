@@ -1,12 +1,12 @@
 {
   "domain": "brink_ventilation",
-  "name": "Brink-home Ventilation",
-  "codeowners": ["@samuolis"],
+  "name": "Brink HRV Control",
+  "codeowners": ["@nikojarvinen"],
   "config_flow": true,
-  "documentation": "https://github.com/samuolis/brink/blob/master/README.md",
+  "documentation": "https://github.com/nikojarvinen/Brink-HRV-control/blob/master/README.md",
   "homeassistant": "2024.8.0",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/samuolis/brink/issues",
+  "issue_tracker": "https://github.com/nikojarvinen/Brink-HRV-control/issues",
   "requirements": [],
   "version": "2.0.0"
 }

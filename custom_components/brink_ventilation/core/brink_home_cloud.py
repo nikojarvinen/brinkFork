@@ -416,7 +416,7 @@ class BrinkHomeCloud:
                 "Could not find CSRF token in OIDC login page. "
                 "The Brink Home website structure may have changed. "
                 "This is NOT a credentials issue — please report it at "
-                "https://github.com/samuolis/brink/issues"
+                "https://github.com/nikojarvinen/Brink-HRV-control/issues"
             )
             raise BrinkAuthError(
                 "Could not find CSRF token in OIDC login page"
@@ -501,7 +501,7 @@ class BrinkHomeCloud:
                     "OIDC login returned 200 without redirect. "
                     "The Brink Home login flow may have changed. "
                     "If your credentials are correct, please report this at "
-                    "https://github.com/samuolis/brink/issues"
+                    "https://github.com/nikojarvinen/Brink-HRV-control/issues"
                 )
                 raise BrinkAuthError(
                     "OIDC login returned 200 - credentials may be invalid"
@@ -511,7 +511,7 @@ class BrinkHomeCloud:
                     "OIDC login returned unexpected HTTP %s. "
                     "The Brink Home website may have changed. "
                     "Please report this at "
-                    "https://github.com/samuolis/brink/issues",
+                    "https://github.com/nikojarvinen/Brink-HRV-control/issues",
                     login_resp.status,
                 )
                 raise BrinkAuthError(
@@ -523,7 +523,7 @@ class BrinkHomeCloud:
                 "OIDC login completed but no authorization code was found "
                 "in the redirect chain. The Brink Home login flow may have "
                 "changed. Please report this at "
-                "https://github.com/samuolis/brink/issues"
+                "https://github.com/nikojarvinen/Brink-HRV-control/issues"
             )
             raise BrinkAuthError(
                 "Could not extract authorization code from OIDC flow"
@@ -567,7 +567,7 @@ class BrinkHomeCloud:
                     "OIDC token exchange failed with HTTP %s. "
                     "The Brink Home authentication flow may have changed. "
                     "Please report this at "
-                    "https://github.com/samuolis/brink/issues",
+                    "https://github.com/nikojarvinen/Brink-HRV-control/issues",
                     token_resp.status,
                 )
                 raise BrinkAuthError(
@@ -583,7 +583,7 @@ class BrinkHomeCloud:
                 "OIDC token response missing access_token field. "
                 "The Brink Home authentication flow may have changed. "
                 "Please report this at "
-                "https://github.com/samuolis/brink/issues"
+                "https://github.com/nikojarvinen/Brink-HRV-control/issues"
             )
             raise BrinkAuthError(
                 "OIDC token response did not contain an access token"
